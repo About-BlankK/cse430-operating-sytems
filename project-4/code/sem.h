@@ -26,10 +26,6 @@ typedef struct Semaphore
 
 Semaphore * InitSem(int value);
 
-Semaphore *mutex;
-Semaphore *rsem;
-Semaphore *wsem;
-
 int wwc, wc, rwc, rc = 0;	//waiting write count, waiting count, reader waiting count, reader count
 
 void P(Semaphore * sem);
@@ -67,57 +63,6 @@ void V(Semaphore * sem)
         AddQueue(runQ, tcb);
     }
     yield();
-}
-
-void reader(){
-	while(1){
-		//Reader Entry
-		P(mutex);
-		if(wwc>0 || wc>0){
-			rwc++;
-			V(mutex);
-			P(rsem);
-			rwc--;
-		}
-		rc++;
-		if(rwc>0)
-			V(rsem);
-		else
-			V(mutex);
-
-		//Reader Exit
-		P(mutex);
-		rc--;
-		if(rc==0 && wwc>0)
-			V(wsem);
-		else
-			V(mutex);
-	}
-}
-
-void writer(){
-	while(1){
-		//Writer Entry
-		P(mutex);
-		if(rc>0 || wc>0){
-			wwc++;
-			V(mutex);
-			P(wsem);
-			wwc--;
-		}
-		wc++;
-		V(mutex);
-
-		//Writer Exit
-		P(mutex);
-		wc--;
-		if(rwc>0)
-			V(rsem);
-		else if(wwc>0)
-			V(wsem);
-		else
-			V(mutex);
-	}
 }
 
 void FreeSemaphore(Semaphore * s)
