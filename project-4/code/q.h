@@ -23,7 +23,7 @@
 
 typedef struct Queue
 {
-    struct TCB_t * head;
+    TCB_t * head;
 } Queue;
 
 // Global Queue variable
@@ -32,10 +32,9 @@ Queue * runQ;
 // Declare all functions available
 TCB_t * NewItem();
 Queue * InitQueue();
-void AddQueue(struct Queue * queue, struct TCB_t * tcb);
-TCB_t * DelQueue(struct Queue * queue);
-void RotateQ(struct Queue * queue);
-void FreeQueue(struct Queue * queue);
+void AddQueue(Queue * queue, TCB_t * tcb);
+TCB_t * DelQueue(Queue * queue);
+void RotateQ(Queue * queue);
 
 /*==========================================
  *      Queue Function Implementations
@@ -46,7 +45,7 @@ struct TCB_t * NewItem()
     /* Uses calloc macro. Calloc is not necessary over
      * malloc, since memset is called on the memory
      * later on in init_TCB. */
-    TCB_t * element = ALLOC(struct TCB_t);
+    TCB_t * element = ALLOC(TCB_t);
     element->prev = NULL;
     element->next = NULL;
     return element;
@@ -54,10 +53,10 @@ struct TCB_t * NewItem()
 
 struct Queue * InitQueue()
 {
-    return ALLOC(struct Queue);
+    return ALLOC(Queue);
 }
 
-void AddQueue(struct Queue * queue, struct TCB_t * element)
+void AddQueue(Queue * queue, TCB_t * element)
 {
     if(queue->head == NULL)
     {
@@ -78,7 +77,7 @@ void AddQueue(struct Queue * queue, struct TCB_t * element)
     }
 }
 
-struct TCB_t * DelQueue(struct Queue * queue)
+struct TCB_t * DelQueue(Queue * queue)
 {
     // No elements
     if(queue->head == NULL)
@@ -115,21 +114,9 @@ struct TCB_t * DelQueue(struct Queue * queue)
     }
 }
 
-void RotateQ(struct Queue * queue)
+void RotateQ(Queue * queue)
 {
     queue->head = queue->head->next;
-}
-
-void FreeQueue(struct Queue * queue)
-{
-    TCB_t * head;
-    while(head != NULL)
-    {
-        TCB_t * temp = head;
-        head = head->next;
-        free(temp);
-        temp = NULL;
-    }
 }
 
 #endif //CSE430_PROJECT_4_Q_H

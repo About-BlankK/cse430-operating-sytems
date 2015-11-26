@@ -1,6 +1,3 @@
-
-
-
 /*===========================================
  *  Authors:
  *      Tyler Brockett
@@ -16,22 +13,7 @@
  ============================================*/
 
 #include <stdio.h>
-#include <unistd.h> // Used for sleep()
-#include <time.h>
 #include "sem.h"
-
-
-#define METHOD_2 2
-
-#define NUM_READER 3
-#define NUM_WRITER 2
-
-#define NUM_RESOURCES 1 // Should be LESS than the number of threads running, to create "competition"
-
-#define SLEEP_TIME 1 // in seconds
-
-int global = 0;
-Semaphore * s;
 
 void reader();
 void writer();
@@ -45,9 +27,6 @@ Semaphore *wsem = NULL;
 void reader();
 void writer();
 
-// Other method forward declarations
-void printQ();
-
 int main()
 {
     runQ = InitQueue();
@@ -56,6 +35,7 @@ int main()
     mutex = InitSem(1);
     rsem = InitSem(0);
     wsem = InitSem(0);
+    runQ = InitSem(0);
 
     start_thread(writer);
     start_thread(writer);
@@ -71,14 +51,14 @@ int main()
 void reader(){
 	while(1){
 		//Reader Entry
-		printf("\n[reader #%p]\tentering CS\n", runQ);
+		printf("\n[reader #%p]\tentering CS\n", runQ->head);
 		P(mutex);
 		if(wwc>0 || wc>0){
-			printf("\n[reader #%p]\tneed to wait for a writer to finish.", runQ);
+			printf("\n[reader #%p]\tneed to wait for a writer to finish.", runQ->head);
 			rwc++;
 			V(mutex);
 			P(rsem);
-			printf("\n[reader #%p]\twaking up.", runQ);
+			printf("\n[reader #%p]\twaking up.", runQ->head);
 			rwc--;
 		}
 		rc++;
@@ -86,13 +66,13 @@ void reader(){
 			V(rsem);
 		else
 			V(mutex);
-		printf("\n[reader #%p]\tgoing into CS.", runQ);
+		printf("\n[reader #%p]\tgoing into CS.", runQ->head);
 
 		//Reader Exit
-		printf("\n[reader #%p]\texiting, get mutex", runQ);
+		printf("\n[reader #%p]\texiting, get mutex", runQ->head);
 		P(mutex);
 		rc--;
-		printf("\n[reader #%p]\tleaving", runQ);
+		printf("\n[reader #%p]\tleaving", runQ->head);
 		if(rc==0 && wwc>0)
 			V(wsem);
 		else
@@ -103,33 +83,33 @@ void reader(){
 void writer(){
 	while(1){
 		//Writer Entry
-		printf("\n[writer #%p]\tentering CS\n", runQ);
+		printf("\n[writer #%p]\tentering CS\n", runQ->head);
 		P(mutex);
 		if(rc>0 || wc>0){
-			printf("\n[writer #%p]\tincreasing 1 to wwc.", runQ);
+			printf("\n[writer #%p]\tincreasing 1 to wwc.", runQ->head);
 			wwc++;
 			V(mutex);
 			P(wsem);
-			printf("\n[writer #%p]\twaking up.", runQ);
+			printf("\n[writer #%p]\twaking up.", runQ->head);
 			wwc--;
 		}
 		wc++;
 		V(mutex);
-		printf("\n[writer #%p]\tgoing into CS.", runQ);
+		printf("\n[writer #%p]\tgoing into CS.", runQ->head);
 		//Writer Exit
-		printf("\n[writer #%p]\texiting", runQ);
+		printf("\n[writer #%p]\texiting", runQ->head);
 		P(mutex);
 		wc--;
 		if(rwc>0){
-			printf("\n[writer #%p]\tremoving a reader.", runQ);
+			printf("\n[writer #%p]\tremoving a reader.", runQ->head);
 			V(rsem);
 		}
 		else if(wwc>0){
-			printf("\n[writer #%p]\tremoving a writer", runQ);
+			printf("\n[writer #%p]\tremoving a writer", runQ->head);
 			V(wsem);
 		}
 		else{
-			printf("\n[writer #%p]\treleasing the resource.", runQ);
+			printf("\n[writer #%p]\treleasing the resource.", runQ->head);
 			V(mutex);
 		}
 	}

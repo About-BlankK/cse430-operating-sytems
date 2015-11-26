@@ -26,8 +26,6 @@ typedef struct Semaphore
 
 Semaphore * InitSem(int value);
 
-int wwc, wc, rwc, rc = 0;	//waiting write count, waiting count, reader waiting count, reader count
-
 void P(Semaphore * sem);
 void V(Semaphore * sem);
 
@@ -63,12 +61,6 @@ void V(Semaphore * sem)
         AddQueue(runQ, tcb);
     }
     yield();
-}
-
-void FreeSemaphore(Semaphore * s)
-{
-    FreeQueue(s->tcb_queue);
-    free(s);
 }
 
 #endif //CSE430_PROJECT_4_SEM_H
