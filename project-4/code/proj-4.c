@@ -36,7 +36,7 @@ int main()
     mutex = InitSem(1);
     rsem = InitSem(0);
     wsem = InitSem(0);
-    runQ = InitSem(0);
+    runQ = InitQueue();
 
     start_thread(writer);
     start_thread(writer);
